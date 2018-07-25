@@ -10,15 +10,13 @@ package mmix;
  * @author bender
  */
 public class Register {
-    private Long content;
-    private String name;
+    private long content;
     
-    public Register(String name){
-        this.name = name;
+    public Register(){
         this.content = new Long(0);
     }
     
-    public Long getContent(){
+    public long getContent(){
         return this.content;
     }
     

@@ -7,6 +7,7 @@ package mmix;
 
 import java.util.HashMap;
 import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
 /**
  *
@@ -14,10 +15,12 @@ import java.util.concurrent.Callable;
  */
 public class Executer {
     
-    HashMap<Integer, Callable> hash;
-    Register x;
-    Register y;
-    Register z;
+    private HashMap<Integer, Supplier<Register>> hash;
+    
+    // Registradores auxiliares para executar as operacoes
+    private Register x;
+    private Register y;
+    private Register z;
     
     public Executer(){
         hash = new HashMap<>();
@@ -25,14 +28,26 @@ public class Executer {
         y = new Register("y");
         z = new Register("z");
         
-        hash.put(0, ADD());
+        hash.put(0, () -> ADD());
         // Insere as instrucoes na hash
         
     }
     
+    public Register execute(CodeLine line){
+        
+        this.x = line.getX();
+        this.y = line.getY();
+        this.z = line.getZ();
+        return hash.get(line.getCode()).getAsLong(); 
+    }
     
     
-    private Long ADD(){
+    
+    private Register ADD(){
+        Register newReg = new Register(""){
+            
+        }
+        
         return this.y.getContent() + this.z.getContent();        
     }
     
