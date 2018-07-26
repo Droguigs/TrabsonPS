@@ -15,11 +15,11 @@ public class MMIX {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        CodeLine[] executavel = new CodeLine[8000];     // Linhas de instrucao 
-        Register[] generalRegisters = new Register[256];
-        Register $PC;
-        Executer exec = new Executer();
+        //CodeLine[] executavel = new CodeLine[8000];     // Linhas de instrucao 
         
+        //Executer exec = new Executer(0);
+        
+        System.out.println("Valor: " + (5/2*2));
         
         
     }
