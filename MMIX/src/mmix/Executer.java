@@ -31,8 +31,51 @@ public class Executer {
         pontoMontagem = montagem;
         
         // Insere as instrucoes na hash
-        instructions.put(45, () -> ADD());
-        
+        instructions.put(0X20, () -> ADD());
+        instructions.put(0X24, () -> SUB());
+        instructions.put(0XC0, () -> OR());
+        instructions.put(0XC8, () -> AND());
+        instructions.put(0XCC, () -> NAND());
+        instructions.put(0XC4, () -> NOR());
+        instructions.put(0XC6, () -> XOR());
+        instructions.put(0XCE, () -> NXOR());
+        instructions.put(0X10, () -> MUL());
+        instructions.put(0X14, () -> DIV());
+        instructions.put(0X60, () -> CSN());
+        instructions.put(0X62, () -> CSZ());
+        instructions.put(0X64, () -> CSP());
+        instructions.put(0X66, () -> CSOD());
+        instructions.put(0X6E, () -> CSEV());
+        instructions.put(0X6A, () -> CSNZ());
+        instructions.put(0X68, () -> CSNN());
+        instructions.put(0X6C, () -> CSNP());
+        instructions.put(0X70, () -> ZSN());
+        instructions.put(0X72, () -> ZSZ());
+        instructions.put(0X74, () -> ZSP());
+        instructions.put(0X76, () -> ZSOD());
+        instructions.put(0X7E, () -> ZSEV());
+        instructions.put(0X7A, () -> ZSNZ());
+        instructions.put(0X78, () -> ZSNN());
+        instructions.put(0X7C, () -> ZSNP());
+        instructions.put(0X3C, () -> SR());
+        instructions.put(0X38, () -> SL());
+        instructions.put(0X80, () -> LDB());
+        instructions.put(0X84, () -> LDW());
+        instructions.put(0X88, () -> LDT());
+        instructions.put(0X8C, () -> LDO());
+        instructions.put(0XA0, () -> STB());
+        instructions.put(0XA4, () -> STW());
+        instructions.put(0XA8, () -> STT());
+        instructions.put(0XAC, () -> STO());
+        instructions.put(0X34, () -> NEG());
+        instructions.put(0X30, () -> CMP());
+        instructions.put(0X44, () -> BP());
+        instructions.put(0X4A, () -> BNZ());
+        instructions.put(0X48, () -> BNN());
+        instructions.put(0X4C, () -> BNP());
+        instructions.put(0X46, () -> BOD());
+        instructions.put(0X4E, () -> BEV());
+        instructions.put(0XF0, () -> JMP());
     }
     
     private void execute(CodeLine line){
@@ -89,7 +132,7 @@ public class Executer {
         
         incrementaPC();
     }
-    private void MULT(){
+    private void MUL(){
         long y, z;
         
         // Operador z recebe o valor desejado (pode ser imediato)
@@ -607,7 +650,7 @@ public class Executer {
         incrementaPC();
     }
     
-    private void SDB(){
+    private void STB(){
         long y, z;
         
         // Operador z recebe o valor desejado (pode ser imediato)
@@ -622,7 +665,7 @@ public class Executer {
         
         incrementaPC();
     }
-    private void SDW(){
+    private void STW(){
         long y, z;
         
         // Operador z recebe o valor desejado (pode ser imediato)
@@ -637,7 +680,7 @@ public class Executer {
         
         incrementaPC();
     }
-    private void SDT(){
+    private void STT(){
         long y, z;
         
         // Operador z recebe o valor desejado (pode ser imediato)
@@ -652,7 +695,7 @@ public class Executer {
         
         incrementaPC();
     }
-    private void SDO(){
+    private void STO(){
         long y, z;
         
         // Operador z recebe o valor desejado (pode ser imediato)
