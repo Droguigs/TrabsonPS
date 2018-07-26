@@ -19,9 +19,8 @@ public class MMIX {
         
         //Executer exec = new Executer(0);
         
-        System.out.println("Valor: " + (5/2*2));
-        
-        
+                
+                
     }
     
 }

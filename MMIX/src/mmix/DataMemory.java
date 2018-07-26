@@ -119,4 +119,13 @@ public class DataMemory {
         
     }
     
+    /** Retorna a memoria inteira 
+     * Esse método deve ser chamado apenas pela interface gráfica para plotar a memória
+     * 
+     * @return A memoria de dados
+     */
+    public byte[] getMemory(){
+        return memArray;
+    }
+    
 }
