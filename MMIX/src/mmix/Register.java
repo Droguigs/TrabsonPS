@@ -15,6 +15,10 @@ public class Register {
     public Register(){
         this.content = new Long(0);
     }
+    public Register(long v){
+        this.content = v;
+    }
+
     
     public long getContent(){
         return this.content;
