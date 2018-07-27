@@ -15,12 +15,10 @@ public class MMIX {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        //CodeLine[] executavel = new CodeLine[8000];     // Linhas de instrucao 
+               
+        CodeLine[] executavel = new CodeLine[8000];     // Linhas de instrucao
         
-        //Executer exec = new Executer(0);
         
-                
-                
     }
     
 }
