@@ -11,33 +11,33 @@ package mmix;
  */
 public class CodeLine {
     private Integer code;
-    private Register $X;
-    private Register $Y;
-    private Register $Z;
+    private Parametro $X;
+    private Parametro $Y;
+    private Parametro $Z;
 
-    public CodeLine(Integer code, Register x, Register y, Register z) {
+    public CodeLine(Integer code, Parametro x, Parametro y, Parametro z) {
         this.code = code;
         this.$X = x;
         this.$Y = y;
         this.$Z = z;
     }
     
+    
     public int getCode(){
         return code;
     }
     
-    public Register getX(){
+    public Parametro getX(){
         return $X;
     }
     
-    public Register getY(){
+    public Parametro getY(){
         return $Y;
     }
     
-    public Register getZ(){
+    public Parametro getZ(){
         return $Z;
     }
-    
     
    
 }
