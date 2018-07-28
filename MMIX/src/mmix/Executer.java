@@ -5,10 +5,10 @@
  */
 package mmix;
 
-import java.util.Collection;
+import executerUtilities.CodeLine;
+import executerUtilities.DataMemory;
+import executerUtilities.Register;
 import java.util.HashMap;
-import java.util.concurrent.Callable;
-import java.util.function.Supplier;
 
 /**
  *
@@ -18,10 +18,10 @@ public class Executer {
     
     private HashMap<Integer, Runnable> instructions;
     private DataMemory memoria;
-    Register[] generalRegisters;    // Banco de registradores de uso geral
-    Register $PC;
-    CodeLine line;
-    int pontoMontagem;
+    private Register[] generalRegisters;    // Banco de registradores de uso geral
+    private Register $PC;
+    private CodeLine line;
+    private int pontoMontagem;
     
     public Executer(int montagem){
         instructions = new HashMap<>();
@@ -78,9 +78,9 @@ public class Executer {
         instructions.put(0XF0, () -> JMP());
     }
     
-    private void execute(CodeLine line){
-        this.line = line;
-        instructions.get(line.getCode()).run();
+    
+    public void runCode(CodeLine[] codigo){
+        
     }
     
     public Register getRegister(int index){
@@ -94,6 +94,13 @@ public class Executer {
     public Register getPC(){
         return this.$PC;
     }
+
+    private void execute(CodeLine line){
+        this.line = line;
+        instructions.get(line.getCode()).run();
+    }
+    
+
     private void incrementaPC(){
         $PC.setContent($PC.getContent() + 4);
     }

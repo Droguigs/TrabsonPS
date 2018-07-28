@@ -5,6 +5,8 @@
  */
 package mmix;
 
+import executerUtilities.CodeLine;
+
 /**
  *
  * @author bender
