@@ -19,7 +19,7 @@ public class Montador {
     private HashMap operandosMap = new HashMap();
     private HashMap tabelaDeUso = new HashMap();
     private HashMap tabelaDef = new HashMap();
-    private HashMap macroOperandos = new HashMap();
+    private HashMap<String, String> macroOperandos = new HashMap<>();
     Map<String, Integer> macroMap = new HashMap<>();
     ProcessadorDeMacros macro = new ProcessadorDeMacros();
 
@@ -75,6 +75,7 @@ public class Montador {
         String nome_tabelasimbolo;
         String nome_tabeladef;
         String nome_tabelauso;
+        char caracter;
         try {
             FileOutputStream arquivo10 = new FileOutputStream("macro1.txt");
         } catch (Exception r) {
@@ -84,7 +85,7 @@ public class Montador {
         int valor;
 
         int count_add = 0, flag_operandos = 0, j = 0, k = 0, cont = 1, flag_break = 0, loop = 0, flag_nextline = 0, flag_macro = 0, cont_macro = 0;
-        int nome_macro = 1;
+        int nome_macro = 1, flag_imediato = 0;
 
         try {
 
@@ -248,8 +249,20 @@ public class Montador {
                         //VERIFICA SE O PRIMEIRO OPERANDO JÃ� FOI LIDO. SE NÃƒO FOI, Ã‰ COLOCADO NA HASH
                         if ((!operandosMap.containsKey(label[label.length - 1]))/* && (label[label.length - 1].contains("$"))*/) {
 
-                            if (!label[label.length - 1].contains("$") && (("BP".equals(label[0])) || ("BNZ".equals(label[0])) || ("BNN".equals(label[0])) || ("BOD".equals(label[0])) || ("BEV".equals(label[0])) || ("JMP".equals(label[0])))) {
+                            if (!label[label.length - 1].contains("$") && (("BP".equals(label[label.length - 2])) || ("BNZ".equals(label[label.length - 2])) || ("BNN".equals(label[label.length - 2])) || ("BOD".equals(label[label.length - 2])) || ("BEV".equals(label[label.length - 2])) || ("JMP".equals(label[label.length - 2])) || ("BNP".equals(label[label.length - 2])) || ("BN".equals(label[label.length - 2])))) {
 
+                                if (tabelaDeUso.containsKey(label[label.length - 1])) {
+                                    
+                                    if (j > 0) {
+                                        tabelaDeUso.put(label[label.length - 1], count_add + 2);
+                                        uso.println(label[label.length - 1] + " " + (count_add + 2));
+                                    } else {
+                                        
+                                        tabelaDeUso.put(label[label.length - 1], count_add + 1);
+                                        uso.println(label[label.length - 1] + " " + (count_add + 1));
+                                    }
+                                }
+                                
                             } else {
                                 if (j > 0) {
 
@@ -258,14 +271,19 @@ public class Montador {
                                         tabelaDeUso.put(label[label.length - 1], count_add + 2);
                                         uso.println(label[label.length - 1] + " " + (count_add + 2));
                                     } else {
-
-                                        operandosMap.put(label[label.length - 1], count_add + 2);
-
-                                        if (tabelaDef.containsKey(label[label.length - 1])) {
-                                            def.println(label[label.length - 1] + " " + (count_add + 2));
+                                        caracter = label[label.length - 1].charAt(0);
+                                        if (flag_operandos == 0 && label[label.length - 1].charAt(0) != '$' && (!(caracter >= 'a' && caracter <= 'z') && !(caracter >= 'A' && caracter <= 'Z'))) {
+                                            
+                                            operandosMap.put(label[label.length - 1], label[label.length - 1]);
                                         } else {
-                                            pw.println(label[label.length - 1] + " " + (count_add + 2));
+                                            operandosMap.put(label[label.length - 1], count_add + 2);
 
+                                            if (tabelaDef.containsKey(label[label.length - 1])) {
+                                                def.println(label[label.length - 1] + " " + (count_add + 2));
+                                            } else {
+                                                pw.println(label[label.length - 1] + " " + (count_add + 2));
+
+                                            }
                                         }
                                     }
                                 } else {
@@ -276,12 +294,18 @@ public class Montador {
                                         uso.println(label[label.length - 1] + " " + (count_add + 1));
                                     } else {
 
-                                        operandosMap.put(label[label.length - 1], count_add + 1);
-
-                                        if (tabelaDef.containsKey(label[label.length - 1])) {
-                                            def.println(label[label.length - 1] + " " + (count_add + 1));
+                                        caracter = label[label.length - 1].charAt(0);
+                                        if (flag_operandos == 0 && label[label.length - 1].charAt(0) != '$' && (!(caracter >= 'a' && caracter <= 'z') && !(caracter >= 'A' && caracter <= 'Z'))) {
+                                            
+                                            operandosMap.put(label[label.length - 1], label[label.length - 1]);
                                         } else {
-                                            pw.println(label[label.length - 1] + " " + (count_add + 1));
+                                                
+                                            operandosMap.put(label[label.length - 1], count_add + 1);
+                                            if (tabelaDef.containsKey(label[label.length - 1])) {
+                                                def.println(label[label.length - 1] + " " + (count_add + 1));
+                                            } else {
+                                                pw.println(label[label.length - 1] + " " + (count_add + 1));
+                                            }
                                         }
                                     }
                                 }
@@ -290,50 +314,64 @@ public class Montador {
                             //VERIFICA SE EXISTE MAIS DE UM OPERANDO. SE TIVER, flag_operandos VALE 1.
                             if (flag_operandos == 1) {
                       
-                                
                                 for (int i = 1; i < operandos.length; i++) {
                                     
                                     if ((!operandosMap.containsKey(operandos[i]))) {
 
-                                        if (!operandos[i].contains("$") && (("BP".equals(label[0])) || ("BNZ".equals(label[0])) || ("BNN".equals(label[0])) || ("BOD".equals(label[0])) || ("BEV".equals(label[0])) || ("JMP".equals(label[0])))) {
+                                        if (!operandos[i].contains("$") && (("BP".equals(label[label.length - 2])) || ("BNZ".equals(label[label.length - 2])) || ("BNN".equals(label[label.length - 2])) || ("BOD".equals(label[label.length - 2])) || ("BEV".equals(label[label.length - 2])) || ("JMP".equals(label[label.length - 2])) || ("BNP".equals(label[label.length - 2])) || (("BN".equals(label[label.length - 2]))))) {
 
                                         } else {
-                                         
-                                            if (j > 0) {
+                                                
+                                                
+                                                    
+                                            caracter = operandos[i].charAt(0);
+                                            //VERIFICA SE O OPERANDO É UM VALOR IMEDIATO        
+                                            if ((!(caracter >= 'a' && caracter <= 'z') && !(caracter >= 'A' && caracter <= 'Z')) && caracter != '$') {
+                                                        
+                                                operandosMap.put(operandos[i], operandos[i]);
+                                                        
+                                                flag_imediato = 1;
+                                            }
+                                              
+                                            if (flag_imediato == 0) {
+                                                if (j > 0) {
+    
+                                                        if (tabelaDeUso.containsKey(operandos[i])) {
 
-                                                if (tabelaDeUso.containsKey(operandos[i])) {
+                                                            tabelaDeUso.put(operandos[i], count_add + 2 + i);
+                                                            uso.println(operandos[i] + " " + (count_add + 2 + i));
+                                                        } else {
 
-                                                    tabelaDeUso.put(operandos[i], count_add + 2 + i);
-                                                    uso.println(operandos[i] + " " + (count_add + 2 + i));
+                                                            operandosMap.put(operandos[i], count_add + i + 2);
+
+                                                            if (tabelaDef.containsKey(operandos[i])) {
+                                                                    def.println(operandos[i] + " " + (count_add + 2 + i));
+                                                            } else {
+                                                                pw.println(operandos[i] + " " + (count_add + 2 + i));
+                                                            }
+                                                        }
                                                 } else {
 
-                                                    operandosMap.put(operandos[i], count_add + i + 2);
+                                                    if (tabelaDeUso.containsKey(operandos[i])) {
 
-                                                    if (tabelaDef.containsKey(operandos[i])) {
-                                                            def.println(operandos[i] + " " + (count_add + 2 + i));
+                                                        tabelaDeUso.put(operandos[i], count_add + 1 + i);
+                                                        uso.println(operandos[i] + " " + (count_add + 1 + i));
                                                     } else {
-                                                        pw.println(operandos[i] + " " + (count_add + 2 + i));
-                                                    }
-                                                }
-                                            } else {
 
-                                                if (tabelaDeUso.containsKey(operandos[i])) {
+                                                        operandosMap.put(operandos[i], count_add + i + 1);
 
-                                                    tabelaDeUso.put(operandos[i], count_add + 1 + i);
-                                                    uso.println(operandos[i] + " " + (count_add + 1 + i));
-                                                } else {
-
-                                                    operandosMap.put(operandos[i], count_add + i + 1);
-
-                                                    if (tabelaDef.containsKey(operandos[i])) {
-                                                        def.println(operandos[i] + " " + (count_add + 1 + i));
-                                                    } else {
-                                                        pw.println(operandos[i] + " " + (count_add + i + 1));
+                                                        if (tabelaDef.containsKey(operandos[i])) {
+                                                            def.println(operandos[i] + " " + (count_add + 1 + i));
+                                                        } else {
+                                                            pw.println(operandos[i] + " " + (count_add + i + 1));
+                                                        }
                                                     }
                                                 }
                                             }
+                                            
                                         }
-                                    } 
+                                    }
+                                    flag_imediato = 0;
                                 }
                             }
                             //System.out.println(operandos.length);
@@ -402,6 +440,7 @@ public class Montador {
         String aux[];
         String nome_codigo;
         String nome_assembly;
+        char caracter;
 
         int i = 0, flag_operandos = 0, k = 0, flag_break = 0, loop = 0, flag_nextline = 0, flag_macro = 0;
 
@@ -504,7 +543,32 @@ public class Montador {
                         //System.out.println(palavras[1]);
                         if (montadorMap.containsKey(palavras[1])) {
 
-                            pw.print(montadorMap.get(palavras[1]) + " ");
+                            if (flag_operandos == 1) {
+                                
+                                caracter = operandos[operandos.length - 1].charAt(0);
+                                
+                                if (!operandos[operandos.length - 1].contains("$") && (!(caracter >= 'a' && caracter <= 'z') && !(caracter >= 'A' && caracter <= 'Z'))) {
+                                    
+                                    pw.print((montadorMap.get(palavras[1]) + 1) + " ");
+                                } else {
+                                    
+                                    pw.print(montadorMap.get(palavras[1]) + " ");
+                                }
+                            }
+                            
+                            if (flag_operandos == 0) {
+                                
+                                caracter = palavras[palavras.length - 1].charAt(0);
+                                
+                                if (!palavras[palavras.length - 1].contains("$") && (!(caracter >= 'a' && caracter <= 'z') && !(caracter >= 'A' && caracter <= 'Z'))) {
+                                    System.out.println(caracter);
+                                    pw.print((montadorMap.get(palavras[1]) + 1) + " ");
+                                } else {
+                                    
+                                    pw.print(montadorMap.get(palavras[1]) + " ");
+                                }
+                            }
+                                
                         } else {
                             System.out.println(montadorMap.get(palavras[i]));
                             System.out.println("Erro! InstruÃ§Ã£o nÃ£o encontrada\nO cÃ³digo nÃ£o pode ser montado");
@@ -533,7 +597,34 @@ public class Montador {
 
                             if (montadorMap.containsKey(palavras[0])) {
 
-                                pw.print(montadorMap.get(palavras[0]) + " ");
+                                if (flag_operandos == 1) {
+                                
+                                    caracter = operandos[operandos.length - 1].charAt(0);
+                                
+                                    if (!operandos[operandos.length - 1].contains("$") && (!(caracter >= 'a' && caracter <= 'z') && !(caracter >= 'A' && caracter <= 'Z'))) {
+                                        
+                                        pw.print((montadorMap.get(palavras[0]) + 1) + " ");
+                                    } else {
+                                    
+                                        pw.print(montadorMap.get(palavras[0]) + " ");
+                                    }
+                                }
+                            
+                                if (flag_operandos == 0) {
+                                
+                                    caracter = palavras[palavras.length - 1].charAt(0);
+                                
+                                    if (!palavras[palavras.length - 1].contains("$") && (!(caracter >= 'a' && caracter <= 'z') && !(caracter >= 'A' && caracter <= 'Z'))) {
+                                    
+                                        pw.print((montadorMap.get(palavras[0]) + 1) + " ");
+                                    } else {
+                                    
+                                        pw.print(montadorMap.get(palavras[0]) + " ");
+                                    }
+                                }    
+                                    
+                                
+                                //pw.print(montadorMap.get(palavras[0]) + " ");
                             } else {
 
                                 System.out.println("Erro! InstruÃ§Ã£o nÃ£o encontrada\nO cÃ³digo nÃ£o pode ser montado");
@@ -600,6 +691,7 @@ public class Montador {
         String nome_codigo;
         String operandos[];
         String label[];
+        char caracter;
 
         int flag_operandos = 0, k = 0, cont = 1, flag_break = 0, loop = 0, flag_nextline = 0, flag_macro = 0, cont_macro = 0, contador = 0;
 
@@ -629,6 +721,7 @@ public class Montador {
 
                         macroOperandos.put(label[0], label1[0]);
                         macroOperandos.put(label[2], label1[2]);
+                        
                     } else {
                         macroOperandos.put(label[1], label1[1]);
                     }
@@ -642,7 +735,7 @@ public class Montador {
 
                 if (flag_nextline == 0) {
                     if ((label.length == 3) && (!operandosMap.containsKey(macroOperandos.get(label[0])))) {
-
+                        
                         if (tabelaDef.containsKey(macroOperandos.get(label[0]))) {
 
                             operandosMap.put(macroOperandos.get(label[0]), count_add + 1);
@@ -650,89 +743,175 @@ public class Montador {
                             def.println(macroOperandos.get(label[0]) + " " + (count_add + 1));
                           
                         } else {
-
+                            
+                            
                             operandosMap.put(macroOperandos.get(label[0]), count_add + 1);
                             pw.println(macroOperandos.get(label[0]) + " " + (count_add + 1));
                         }
+                    } else {
+                        //VERIFICA SE O LABEL É DEFINIDO INTERNAMENTE NA MACRO
+                        if (macroOperandos.get(label[0]) == null) {
+                            
+                            if (!tabelaDeUso.containsKey(label[0])) {
+                                
+                                if (!operandosMap.containsKey(label[0])) {
+                                    operandosMap.put(label[0], count_add + 1);
+                                }
+                            }
+                           
+                        }
                     }
+                    
+                    if (macroOperandos.containsKey(label[label.length - 1])) {
+                        //VERIFICA SE O PRIMEIRO OPERANDO JÃ� FOI LIDO. SE NÃƒO FOI, Ã‰ COLOCADO NA HASH
+                        if ((!operandosMap.containsKey(macroOperandos.get(label[label.length - 1])))) {
 
-                    //VERIFICA SE O PRIMEIRO OPERANDO JÃ� FOI LIDO. SE NÃƒO FOI, Ã‰ COLOCADO NA HASH
-                    if ((!operandosMap.containsKey(macroOperandos.get(label[label.length - 1]))) /*&& (label[label.length - 1].contains("$"))*/) {
+                            if (j > 0) {
 
-                        if (j > 0) {
+                                if (tabelaDeUso.containsKey(macroOperandos.get((label[label.length - 1])))) {
 
-                            if (tabelaDeUso.containsKey(macroOperandos.get((label[label.length - 1])))) {
+                                    tabelaDeUso.put(macroOperandos.get(label[label.length - 1]), count_add + 2);
+                                    uso.println(macroOperandos.get(label[label.length - 1]) + " " + (count_add + 2));
+                                } else {
 
-                                tabelaDeUso.put(macroOperandos.get(label[label.length - 1]), count_add + 2);
-                                uso.println(macroOperandos.get(label[label.length - 1]) + " " + (count_add + 2));
+                                    operandosMap.put(macroOperandos.get(label[label.length - 1]), count_add + 2);
+
+                                    if (tabelaDef.containsKey(macroOperandos.get(label[label.length - 1]))) {
+                                        def.println(macroOperandos.get(label[label.length - 1]) + " " + (count_add + 2));
+                                    } else {
+                                        pw.println(macroOperandos.get(label[label.length - 1]) + " " + (count_add + 2));
+
+                                    }
+                                }
                             } else {
 
-                                operandosMap.put(macroOperandos.get(label[label.length - 1]), count_add + 2);
+                                if (tabelaDeUso.containsKey(macroOperandos.get(label[label.length - 1]))) {
 
-                                if (tabelaDef.containsKey(macroOperandos.get(label[label.length - 1]))) {
-                                    def.println(macroOperandos.get(label[label.length - 1]) + " " + (count_add + 2));
+                                    tabelaDeUso.put(macroOperandos.get(label[label.length - 1]), count_add + 1);
+                                    uso.println(macroOperandos.get(label[label.length - 1]) + " " + (count_add + 1));
                                 } else {
-                                    pw.println(macroOperandos.get(label[label.length - 1]) + " " + (count_add + 2));
 
+                                    operandosMap.put(macroOperandos.get(label[label.length - 1]), count_add + 1);
+
+                                    if (tabelaDef.containsKey(macroOperandos.get(label[label.length - 1]))) {
+                                        def.println(macroOperandos.get(label[label.length - 1]) + " " + (count_add + 1));
+                                    } else {
+                                        pw.println(macroOperandos.get(label[label.length - 1]) + " " + (count_add + 1));
+                                    }
                                 }
                             }
-                        } else {
-
-                            if (tabelaDeUso.containsKey(macroOperandos.get(label[label.length - 1]))) {
-
-                                tabelaDeUso.put(macroOperandos.get(label[label.length - 1]), count_add + 1);
-                                uso.println(macroOperandos.get(label[label.length - 1]) + " " + (count_add + 1));
-                            } else {
-
-                                operandosMap.put(macroOperandos.get(label[label.length - 1]), count_add + 1);
-
-                                if (tabelaDef.containsKey(macroOperandos.get(label[label.length - 1]))) {
-                                    def.println(macroOperandos.get(label[label.length - 1]) + " " + (count_add + 1));
-                                } else {
-                                    pw.println(macroOperandos.get(label[label.length - 1]) + " " + (count_add + 1));
-                                }
-                            }
+                        } //else {
+                    } else {
+                        if (macroOperandos.get(label[label.length - 1]) == null) {
+                            
+                            if (!tabelaDeUso.containsKey(label[label.length - 1])) {
+                                
+                                if (!operandosMap.containsKey(label[label.length - 1])) {
+                                    
+                                    caracter = label[label.length - 1].charAt(0);
+                                            
+                                    if (caracter != '$' && (!(caracter >= 'a' && caracter <= 'z') && !(caracter >= 'A' && caracter <= 'Z'))) {
+                                    
+                                        operandosMap.put(label[label.length - 1], label[label.length - 1]);
+                                    } else {
+                                        
+                                        if ((("BP".equals(label[label.length - 2])) || ("BNZ".equals(label[label.length - 2])) || ("BNN".equals(label[label.length - 2])) || ("BOD".equals(label[label.length - 2])) || ("BEV".equals(label[label.length - 2])) || ("JMP".equals(label[label.length - 2])) || ("BNP".equals(label[label.length - 2])) || (("BN".equals(label[label.length - 2]))))) {
+                                            
+                                        } else {
+                                            
+                                            if (j > 0) {
+                                                operandosMap.put(label[label.length - 1], count_add + 2);
+                                                pw.println(label[label.length - 1] + " " + (count_add + 2));
+                                            }
+                                            else {
+                                                operandosMap.put(label[label.length - 1], count_add + 1);
+                                                pw.println(label[label.length - 1] + " " + (count_add + 1));
+                                            }
+                                        }
+                                    }    
+                                }   
+                            }   
+                                
                         }
                     }
 
                     if (flag_operandos == 1) {
                         
                         for (int i = 1; i < operandos.length; i++) {
-                          
-                            if ((!operandosMap.containsKey(macroOperandos.get(operandos[i])))/* && (operandos[i].contains("$"))*/) {
+                            
+                            if (macroOperandos.containsKey(operandos[i])) {
+                            
+                                if ((!operandosMap.containsKey(macroOperandos.get(operandos[i]))) ) {
 
-                                if (j > 0) {
+                                    //System.out.println(macroOperandos.get("500"));
+                                    if (j > 0) {
 
-                                    if (tabelaDeUso.containsKey(macroOperandos.get(operandos[i]))) {
+                                        if (tabelaDeUso.containsKey(macroOperandos.get(operandos[i]))) {
 
-                                        tabelaDeUso.put(macroOperandos.get(operandos[i]), count_add + 2 + i);
-                                        uso.println(macroOperandos.get(operandos[i]) + " " + (count_add + 2 + i));
+                                            tabelaDeUso.put(macroOperandos.get(operandos[i]), count_add + 2 + i);
+                                            uso.println(macroOperandos.get(operandos[i]) + " " + (count_add + 2 + i));
+                                        } else {
+
+                                            operandosMap.put(macroOperandos.get(operandos[i]), count_add + i + 2);
+
+                                            if (tabelaDef.containsKey(macroOperandos.get(operandos[i]))) {
+                                                def.println(macroOperandos.get(operandos[i]) + " " + (count_add + 2 + i));
+                                            } else {
+                                                pw.println(macroOperandos.get(operandos[i]) + " " + (count_add + 2 + i));
+                                            }
+                                        }
                                     } else {
 
-                                        operandosMap.put(macroOperandos.get(operandos[i]), count_add + i + 2);
+                                        if (tabelaDeUso.containsKey(macroOperandos.get(operandos[i]))) {
 
-                                        if (tabelaDef.containsKey(macroOperandos.get(operandos[i]))) {
-                                            def.println(macroOperandos.get(operandos[i]) + " " + (count_add + 2 + i));
+                                            tabelaDeUso.put(macroOperandos.get(operandos[i]), count_add + 1 + i);
+                                            uso.println(macroOperandos.get(operandos[i]) + " " + (count_add + 1 + i));
                                         } else {
-                                            pw.println(macroOperandos.get(operandos[i]) + " " + (count_add + 2 + i));
+
+                                            operandosMap.put(macroOperandos.get(operandos[i]), count_add + i + 1);
+
+                                            if (tabelaDef.containsKey(macroOperandos.get(macroOperandos.get(operandos[i])))) {
+                                                def.println(macroOperandos.get(operandos[i]) + " " + (count_add + 1 + i));
+                                            } else {
+                                                pw.println(macroOperandos.get(operandos[i]) + " " + (count_add + i + 1));
+                                            }
                                         }
                                     }
-                                } else {
+                                } //else {
+                            } else {
+                                if (macroOperandos.get(operandos[i]) == null) {
+                                    
+                                    if (!tabelaDeUso.containsKey(operandos[i])) {
+                                
+                                        if (!operandosMap.containsKey(operandos[i])) {
+                                            
+                                            caracter = operandos[i].charAt(0);
+                                            
+                                            if (caracter != '$' && (!(caracter >= 'a' && caracter <= 'z') && !(caracter >= 'A' && caracter <= 'Z'))) {
+                                                
+                                                operandosMap.put(operandos[i], operandos[i]); 
+                                            } else {
+                                                
+                                                if ((("BP".equals(label[label.length - 2])) || ("BNZ".equals(label[label.length - 2])) || ("BNN".equals(label[label.length - 2])) || ("BOD".equals(label[label.length - 2])) || ("BEV".equals(label[label.length - 2])) || ("JMP".equals(label[label.length - 2])) || ("BNP".equals(label[label.length - 2])) || (("BN".equals(label[label.length - 2]))))) {
+                                                    
+                                                } else {
+                                                    
+                                                    if (j > 0) {
+                                                        pw.println(operandos[i] + " " + (count_add + 2 + i));
+                                                        operandosMap.put(operandos[i], count_add + 2 + i); 
 
-                                    if (tabelaDeUso.containsKey(macroOperandos.get(operandos[i]))) {
+                                                    } else {
+                                                        pw.println(operandos[i] + " " + (count_add + 1 + i));
+                                                        operandosMap.put(operandos[i], count_add + 1 + i); 
 
-                                        tabelaDeUso.put(macroOperandos.get(operandos[i]), count_add + 1 + i);
-                                        uso.println(macroOperandos.get(operandos[i]) + " " + (count_add + 1 + i));
-                                    } else {
-
-                                        operandosMap.put(macroOperandos.get(operandos[i]), count_add + i + 1);
-
-                                        if (tabelaDef.containsKey(macroOperandos.get(macroOperandos.get(operandos[i])))) {
-                                            def.println(macroOperandos.get(operandos[i]) + " " + (count_add + 1 + i));
-                                        } else {
-                                            pw.println(macroOperandos.get(operandos[i]) + " " + (count_add + i + 1));
+                                                    }
+                                                }
+                                                
+                                            }
+                                            
                                         }
                                     }
+                           
                                 }
                             }
                         }
