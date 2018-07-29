@@ -133,4 +133,8 @@ public class DataMemory {
         return memArray;
     }
     
+    public void setMemory(ArrayList mem){
+        this.memArray = mem;
+    }
+    
 }

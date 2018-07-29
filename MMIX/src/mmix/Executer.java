@@ -139,7 +139,7 @@ public class Executer {
                 // Recebe o opcode e os parametros
                 opcode = Integer.valueOf(parts[0]);
                 for(i=1; i<parts.length; i++)
-                    param[i] = Long.valueOf(parts[i - 1]);
+                    param[i-1] = Long.valueOf(parts[i]);
                 
                 // Preenche o array de parametros com null, caso nao tenha o valor
                 for(i = parts.length-1; i<3; i++)
@@ -168,16 +168,21 @@ public class Executer {
         
         // Executa o codigo
         $LC = 0;
-        this.line = code[lc2pc.get($LC)];   // Primeira instrucao
-        while(this.line != null && this.line.getCode() != 0){        // Enquanto houverem instrucoes e nao for de parada
-            execute(this.line);                     // Executa a instrução atual
-            this.line = code[lc2pc.get($LC)];       // Proxima instrucao
-        }
+        while($LC < currentLC){
+            this.line = code[lc2pc.get($LC)];   // Primeira instrucao
             
+            if(this.line.getCode() == 0)
+                return;
+            
+            System.out.println("" + this.line.getCode());
+            execute(this.line);
+            
+        }
+         
     }
     
-    public void incrementaLC(long inc){
-        $LC = $LC + inc;
+    private void incrementaLC(long inc){
+        $LC = $LC + inc + 1;
     }
     public long getLC(){
         return this.$LC;
@@ -190,6 +195,7 @@ public class Executer {
     private void execute(CodeLine line){
         this.line = line;
         instructions.get(line.getCode()).run();
+        
     }
     
     // Instructions
