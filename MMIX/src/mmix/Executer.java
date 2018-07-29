@@ -7,6 +7,10 @@ package mmix;
 
 import executerUtilities.CodeLine;
 import executerUtilities.DataMemory;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
  
 /**
@@ -16,12 +20,16 @@ import java.util.HashMap;
 public class Executer {
     
     private HashMap<Integer, Runnable> instructions;
+    private HashMap<Long, Integer> lc2pc;      // Um long (PL) é usado para obter o PC (int)
     private DataMemory memoria;
-    private long $LC;
+    private CodeLine[] code;
     private CodeLine line;
+    private long $LC;
     
     public Executer(){
         instructions = new HashMap<>();
+        lc2pc = new HashMap<>();
+        code = new CodeLine[8000];
         memoria = new DataMemory();
         
         // Insere as instrucoes na hash
@@ -111,9 +119,60 @@ public class Executer {
     
     }
     
-    
-    public void runCode(String filename){
+    public void runCode(String fileName){
+        long currentLC = 0;
+        int PC = 0, numArgs = 0, i;
+        Integer opcode;
+        String line;
+        String[] parts;
+        Long[] param = new Long[3];
         
+        try {
+            
+            FileReader fileReader = new FileReader(fileName);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+            while((line = bufferedReader.readLine()) != null) {
+                parts = line.split(" ");
+                
+                // Recebe o opcode e os parametros
+                opcode = Integer.valueOf(parts[0]);
+                for(i=1; i<parts.length; i++)
+                    param[i] = Long.valueOf(parts[i - 1]);
+                
+                // Preenche o array de parametros com null, caso nao tenha o valor
+                for(i = parts.length-1; i<3; i++)
+                    param[i] = null;
+                
+                // Insere na tabela de linhas de codigo
+                code[PC] = new CodeLine(opcode, param[0], param[1], param[2]);
+                
+                // Insere relacao LC - PC na hash
+                lc2pc.put(currentLC, PC);
+                
+                // Incrementa ambos
+                PC = PC + 1;
+                currentLC = currentLC + parts.length;
+                        
+            }   
+
+            bufferedReader.close();         
+        }
+        catch(FileNotFoundException ex) {
+            System.out.println("Unable to open file '" + fileName + "'");                
+        }
+        catch(IOException ex) {
+            System.out.println("Error reading file '" + fileName + "'");
+        }
+        
+        // Executa o codigo
+        $LC = 0;
+        this.line = code[lc2pc.get($LC)];   // Primeira instrucao
+        while(this.line != null && this.line.getCode() != 0){        // Enquanto houverem instrucoes e nao for de parada
+            execute(this.line);                     // Executa a instrução atual
+            this.line = code[lc2pc.get($LC)];       // Proxima instrucao
+        }
+            
     }
     
     public void incrementaLC(long inc){

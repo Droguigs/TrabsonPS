@@ -16,7 +16,7 @@ public class CodeLine {
     private long $Y;
     private long $Z;
 
-    public CodeLine(Integer code, long x, long y, long z) {
+    public CodeLine(Integer code, Long x, Long y, Long z) {
         this.code = code;
         this.$X = x;
         this.$Y = y;
@@ -27,15 +27,15 @@ public class CodeLine {
         return code;
     }
     
-    public long getX(){
+    public Long getX(){
         return $X;
     }
     
-    public long getY(){
+    public Long getY(){
         return $Y;
     }
     
-    public long getZ(){
+    public Long getZ(){
         return $Z;
     }
     
