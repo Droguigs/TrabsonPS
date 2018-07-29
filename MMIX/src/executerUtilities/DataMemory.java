@@ -16,17 +16,17 @@ public class DataMemory {
         memArray = new byte[102400];
     }
     
-    public long readByte(int byteIndex){
-        long aux = memArray[byteIndex];
+    public long readByte(long byteIndex){
+        long aux = memArray[(int)byteIndex];
         
         if(aux < 0)
             aux = aux & 255;
         
         return aux;
     }
-    public long readWyde(int byteIndex){
+    public long readWyde(long byteIndex){
        long ret = 0, aux;
-       int index = (byteIndex/2) * 2;     // Deve ser divisível por 2
+       int index = ((int)byteIndex/2) * 2;     // Deve ser divisível por 2
        
        // MMIX is Big Endian
        for(int i=1; i>=0; i--, index++){
@@ -41,9 +41,9 @@ public class DataMemory {
        return ret;
 
     }
-    public long readTetra(int byteIndex){
+    public long readTetra(long byteIndex){
         long ret = 0, aux; 
-        int index = (byteIndex/4) * 4;     // Deve ser divisível por 4
+        int index = ((int)byteIndex/4) * 4;     // Deve ser divisível por 4
         
         // MMIX is Big Endian
         for(int i=3; i>=0; i--, index++){
@@ -58,9 +58,9 @@ public class DataMemory {
         return ret;
         
     }
-    public long readOcta(int byteIndex){
+    public long readOcta(long byteIndex){
         long ret = 0, aux; 
-        int index = (byteIndex/8) * 8;     // Deve ser divisível por 8
+        int index = ((int)byteIndex/8) * 8;     // Deve ser divisível por 8
         
         // MMIX is Big Endian
         for(int i=7; i>=0; i--, index++){
@@ -76,12 +76,12 @@ public class DataMemory {
         
     }
     
-    public void storeByte(int byteIndex, long value){
+    public void storeByte(long byteIndex, long value){
         byte v = (byte)value;
-        memArray[byteIndex] = v;
+        memArray[(int)byteIndex] = v;
     }
-    public void storeWyde(int byteIndex, long value){
-       int index = (byteIndex / 2 * 2) + 1;
+    public void storeWyde(long byteIndex, long value){
+       int index = ((int)byteIndex / 2 * 2) + 1;
        byte v;
        
        // MMIX is Big Endian
@@ -92,9 +92,9 @@ public class DataMemory {
        }
 
     }
-    public void storeTetra(int byteIndex, long value){
+    public void storeTetra(long byteIndex, long value){
         
-        int index = (byteIndex / 4 * 4) + 3;
+        int index = ((int)byteIndex / 4 * 4) + 3;
         byte v;
        
        // MMIX is Big Endian
@@ -105,9 +105,9 @@ public class DataMemory {
        }
         
     }
-    public void storeOcta(int byteIndex, long value){
+    public void storeOcta(long byteIndex, long value){
         
-        int index = byteIndex + 7;
+        int index = ((int)byteIndex / 8 * 8) + 7;
         byte v;
        
        // MMIX is Big Endian

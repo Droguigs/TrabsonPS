@@ -5,7 +5,6 @@
  */
 package executerUtilities;
 
-import executerUtilities.Parametro;
 
 /**
  *
@@ -13,31 +12,30 @@ import executerUtilities.Parametro;
  */
 public class CodeLine {
     private Integer code;
-    private Parametro $X;
-    private Parametro $Y;
-    private Parametro $Z;
+    private long $X;
+    private long $Y;
+    private long $Z;
 
-    public CodeLine(Integer code, Parametro x, Parametro y, Parametro z) {
+    public CodeLine(Integer code, long x, long y, long z) {
         this.code = code;
         this.$X = x;
         this.$Y = y;
         this.$Z = z;
     }
     
-    
     public int getCode(){
         return code;
     }
     
-    public Parametro getX(){
+    public long getX(){
         return $X;
     }
     
-    public Parametro getY(){
+    public long getY(){
         return $Y;
     }
     
-    public Parametro getZ(){
+    public long getZ(){
         return $Z;
     }
     

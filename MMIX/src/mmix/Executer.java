@@ -7,9 +7,8 @@ package mmix;
 
 import executerUtilities.CodeLine;
 import executerUtilities.DataMemory;
-import executerUtilities.Register;
 import java.util.HashMap;
-
+ 
 /**
  *
  * @author bender
@@ -18,24 +17,19 @@ public class Executer {
     
     private HashMap<Integer, Runnable> instructions;
     private DataMemory memoria;
-    private Register[] generalRegisters;    // Banco de registradores de uso geral
-    private Register $PC;
+    private long $LC;
     private CodeLine line;
-    private int pontoMontagem;
     
-    public Executer(int montagem){
+    public Executer(){
         instructions = new HashMap<>();
         memoria = new DataMemory();
-        generalRegisters = new Register[256];
-        $PC = new Register();
-        pontoMontagem = montagem;
         
         // Insere as instrucoes na hash
-        instructions.put(0X20, () -> ADD());
-        instructions.put(0X24, () -> SUB());
-        instructions.put(0XC0, () -> OR());
-        instructions.put(0XC8, () -> AND());
-        instructions.put(0XCC, () -> NAND());
+        instructions.put(0X20, () -> ADD());        
+        instructions.put(0X24, () -> SUB());        
+        instructions.put(0XC0, () -> OR());        
+        instructions.put(0XC8, () -> AND());        
+        instructions.put(0XCC, () -> NAND());   
         instructions.put(0XC4, () -> NOR());
         instructions.put(0XC6, () -> XOR());
         instructions.put(0XCE, () -> NXOR());
@@ -76,23 +70,57 @@ public class Executer {
         instructions.put(0X46, () -> BOD());
         instructions.put(0X4E, () -> BEV());
         instructions.put(0XF0, () -> JMP());
+        
+        instructions.put(0X21, () -> ADDI());
+        instructions.put(0X25, () -> SUBI());
+        instructions.put(0XC1, () -> ORI());
+        instructions.put(0XC9, () -> ANDI());
+        instructions.put(0XCD, () -> NANDI());
+        instructions.put(0XC5, () -> NORI());
+        instructions.put(0XC7, () -> XORI());
+        instructions.put(0X11, () -> MULI());
+        instructions.put(0X15, () -> DIVI());
+        instructions.put(0X61, () -> CSNI());
+        instructions.put(0X63, () -> CSZI());
+        instructions.put(0X65, () -> CSPI());
+        instructions.put(0X67, () -> CSODI());
+        instructions.put(0X6F, () -> CSEVI());
+        instructions.put(0X6B, () -> CSNZI());
+        instructions.put(0X69, () -> CSNNI());
+        instructions.put(0X6D, () -> CSNPI());
+        instructions.put(0X71, () -> ZSNI());
+        instructions.put(0X73, () -> ZSZI());
+        instructions.put(0X75, () -> ZSPI());
+        instructions.put(0X77, () -> ZSODI());
+        instructions.put(0X7F, () -> ZSEVI());
+        instructions.put(0X7B, () -> ZSNZI());
+        instructions.put(0X79, () -> ZSNNI());
+        instructions.put(0X7D, () -> ZSNPI());
+        instructions.put(0X3D, () -> SRI());
+        instructions.put(0X39, () -> SLI());        
+        instructions.put(0X81, () -> LDBI());
+        instructions.put(0X85, () -> LDWI());
+        instructions.put(0X89, () -> LDTI());
+        instructions.put(0X8D, () -> LDOI());
+        instructions.put(0XA1, () -> STBI());
+        instructions.put(0XA5, () -> STWI());
+        instructions.put(0XA9, () -> STTI());
+        instructions.put(0XAD, () -> STOI());
+        instructions.put(0X35, () -> NEGI());
+        instructions.put(0X31, () -> CMPI());
+    
     }
     
     
-    public void runCode(CodeLine[] codigo){
+    public void runCode(String filename){
         
     }
     
-    public Register getRegister(int index){
-        return generalRegisters[index];
+    public void incrementaLC(long inc){
+        $LC = $LC + inc;
     }
-    
-    public Register[] getRegisters(){
-        return generalRegisters;
-    }
-    
-    public Register getPC(){
-        return this.$PC;
+    public long getLC(){
+        return this.$LC;
     }
 
     private void execute(CodeLine line){
@@ -100,748 +128,507 @@ public class Executer {
         instructions.get(line.getCode()).run();
     }
     
-
-    private void incrementaPC(){
-        $PC.setContent($PC.getContent() + 4);
-    }
-    private void jump(long offset){
-        $PC.setContent(offset * 4);
-    }
-    
     // Instructions
     private void ADD(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Registrador x recebe o resultado
-        generalRegisters[line.getX().getIndex()].setContent(y + z);
-        
-        incrementaPC();
+        memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getY() * 8) + memoria.readOcta(line.getZ() * 8));
+        incrementaLC(3);
+    }
+    private void ADDI(){
+        memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getY() * 8) + line.getZ());
+        incrementaLC(3);
     }
     private void SUB(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Registrador x recebe o resultado
-        generalRegisters[line.getX().getIndex()].setContent(y - z);
-        
-        incrementaPC();
+        memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getY() * 8) - memoria.readOcta(line.getZ() * 8));
+        incrementaLC(3);
+    }
+    private void SUBI(){
+        memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getY() * 8) - line.getZ());
+        incrementaLC(3);
     }
     private void MUL(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Registrador x recebe o resultado
-        generalRegisters[line.getX().getIndex()].setContent(y * z);
-        
-        incrementaPC();
+        memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getY() * 8) * memoria.readOcta(line.getZ() * 8));
+        incrementaLC(3);
+    }
+    private void MULI(){
+        memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getY() * 8) * line.getZ());
+        incrementaLC(3);
     }
     private void DIV(){
-        long y, z, zero = 0;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Registrador x recebe o resultado
-        if(z == 0)
-            generalRegisters[line.getX().getIndex()].setContent(zero);
-        else
-            generalRegisters[line.getX().getIndex()].setContent(y / z);
-        
-        
-        incrementaPC();
+        if(line.getZ() == 0)
+           memoria.storeOcta(line.getX() * 8, 0);
+        else   
+            memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getY() * 8) * memoria.readOcta(line.getZ() * 8));
+       
+        incrementaLC(3);
+    }
+    private void DIVI(){
+        if(line.getZ() == 0)
+           memoria.storeOcta(line.getX() * 8, 0);
+        else   
+            memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getY() * 8) * line.getZ());
+       
+        incrementaLC(3);
     }
     
     private void OR(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Registrador x recebe o resultado
-        generalRegisters[line.getX().getIndex()].setContent(y | z);
-        
-        incrementaPC();
+        memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getY() * 8) | memoria.readOcta(line.getZ() * 8));
+        incrementaLC(3);
+    }
+    private void ORI(){
+        memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getY() * 8) | line.getZ());
+        incrementaLC(3);
     }
     private void AND(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Registrador x recebe o resultado
-        generalRegisters[line.getX().getIndex()].setContent(y & z);
-        
-        incrementaPC();
+       memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getY() * 8) & memoria.readOcta(line.getZ() * 8));
+       incrementaLC(3);
+    }
+    private void ANDI(){
+       memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getY() * 8) & line.getZ());
+       incrementaLC(3);
     }
     private void XOR(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Registrador x recebe o resultado
-        generalRegisters[line.getX().getIndex()].setContent(y ^ z);
-        
-        incrementaPC();
+        memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getY() * 8) ^ memoria.readOcta(line.getZ() * 8));
+        incrementaLC(3);
+    }
+    private void XORI(){
+        memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getY() * 8) ^ line.getZ());
+        incrementaLC(3);
     }
     private void NOR(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Registrador x recebe o resultado
-        generalRegisters[line.getX().getIndex()].setContent(~(y | z));
-        
-        incrementaPC();
+        memoria.storeOcta(line.getX() * 8, ~(memoria.readOcta(line.getY() * 8) | memoria.readOcta(line.getZ() * 8)));
+        incrementaLC(3);
+    }
+    private void NORI(){
+        memoria.storeOcta(line.getX() * 8, ~(memoria.readOcta(line.getY() * 8) | line.getZ()));
+        incrementaLC(3);
     }
     private void NAND(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Registrador x recebe o resultado
-        generalRegisters[line.getX().getIndex()].setContent(~(y & z));
-        
-        incrementaPC();
+        memoria.storeOcta(line.getX() * 8, ~(memoria.readOcta(line.getY() * 8) & memoria.readOcta(line.getZ() * 8)));
+        incrementaLC(3);
+    }
+    private void NANDI(){
+        memoria.storeOcta(line.getX() * 8, ~(memoria.readOcta(line.getY() * 8) & line.getZ()));
+        incrementaLC(3);
     }
     private void NXOR(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Registrador x recebe o resultado
-        generalRegisters[line.getX().getIndex()].setContent(~(y ^ z));
-        
-        incrementaPC();
+        memoria.storeOcta(line.getX() * 8, ~(memoria.readOcta(line.getY() * 8) ^ memoria.readOcta(line.getZ() * 8)));
+        incrementaLC(3);
+    }
+    private void NXORI(){
+        memoria.storeOcta(line.getX() * 8, ~(memoria.readOcta(line.getY() * 8) ^ line.getZ()));
+        incrementaLC(3);
     }
     
     private void CSN(){
-        long y, z;
         
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
+        // Registrador x recebe o resultado
+        if(memoria.readOcta(line.getY() * 8) < 0)
+            memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getZ() * 8));
+               
+        incrementaLC(3);
         
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
+    }
+    private void CSNI(){
         
-        if(y < 0){
-             // Registrador x recebe o resultado
-             generalRegisters[line.getX().getIndex()].setContent(z);
-        }
-        
-        incrementaPC();
+        // Registrador x recebe o resultado
+        if(memoria.readOcta(line.getY() * 8) < 0)
+            memoria.storeOcta(line.getX() * 8, line.getZ());
+               
+        incrementaLC(3);
         
     }
     private void CSZ(){
-        long y, z;
+        // Registrador x recebe o resultado
+        if(memoria.readOcta(line.getY() * 8) == 0)
+            memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getZ() * 8));
+               
+        incrementaLC(3);
         
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        if(y == 0){
-             // Registrador x recebe o resultado
-             generalRegisters[line.getX().getIndex()].setContent(z);
-        }
-        
-        incrementaPC();
+    }
+    private void CSZI(){
+        // Registrador x recebe o resultado
+        if(memoria.readOcta(line.getY() * 8) == 0)
+            memoria.storeOcta(line.getX() * 8, line.getZ());
+               
+        incrementaLC(3);
         
     }
     private void CSP(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        if(y > 0){
-             // Registrador x recebe o resultado
-             generalRegisters[line.getX().getIndex()].setContent(z);
-        }
-        
-        incrementaPC();
+        // Registrador x recebe o resultado
+        if(memoria.readOcta(line.getY() * 8) > 0)
+            memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getZ() * 8));
+               
+        incrementaLC(3);
+    }
+    private void CSPI(){
+        // Registrador x recebe o resultado
+        if(memoria.readOcta(line.getY() * 8) > 0)
+            memoria.storeOcta(line.getX() * 8, line.getZ());
+               
+        incrementaLC(3);
     }
     private void CSOD(){
-        long y, z;
+        if(memoria.readOcta(line.getY()) * 2 == 1)
+            memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getZ() * 8));
+               
+        incrementaLC(3);
         
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        if(y % 2 == 1){
-             // Registrador x recebe o resultado
-             generalRegisters[line.getX().getIndex()].setContent(z);
-        }
-        incrementaPC();
+    }
+    private void CSODI(){
+        if(memoria.readOcta(line.getY()) * 2 == 1)
+            memoria.storeOcta(line.getX() * 8, line.getZ() * 8);
+               
+        incrementaLC(3);
         
     }
     private void CSEV(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        if(y % 2 == 0){
-             // Registrador x recebe o resultado
-             generalRegisters[line.getX().getIndex()].setContent(z);
-        }
-        incrementaPC();
+        if(memoria.readOcta(line.getY() * 8) % 2 == 0)
+            memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getZ() * 8));
+               
+        incrementaLC(3);
+    }
+    private void CSEVI(){
+        if(memoria.readOcta(line.getY() * 8) % 2 == 0)
+            memoria.storeOcta(line.getX() * 8, line.getZ());
+               
+        incrementaLC(3);
     }
     private void CSNZ(){
-        long y, z;
+        if(memoria.readOcta(line.getY() * 8) != 0)
+            memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getZ() * 8));
+               
+        incrementaLC(3);
         
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
+    }
+    private void CSNZI(){
+        if(memoria.readOcta(line.getY() * 8) != 0)
+            memoria.storeOcta(line.getX() * 8, line.getZ());
+               
+        incrementaLC(3);
         
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        if(y != 0){
-             // Registrador x recebe o resultado
-             generalRegisters[line.getX().getIndex()].setContent(z);
-        }
-        
-        incrementaPC();
     }
     private void CSNN(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        if(y >= 0){
-             // Registrador x recebe o resultado
-             generalRegisters[line.getX().getIndex()].setContent(z);
-        }
-        
-        incrementaPC();
+        if(memoria.readOcta(line.getY() * 8) >= 0)
+            memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getZ() * 8));
+               
+        incrementaLC(3);
+    }
+    private void CSNNI(){
+        if(memoria.readOcta(line.getY() * 8) >= 0)
+            memoria.storeOcta(line.getX() * 8, line.getZ());
+               
+        incrementaLC(3);
     }
     private void CSNP(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        if(y <= 0){
-             // Registrador x recebe o resultado
-             generalRegisters[line.getX().getIndex()].setContent(z);
-        }
-        
-        incrementaPC();
+        if(memoria.readOcta(line.getY() * 8) <= 0)
+            memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getZ() * 8));
+               
+        incrementaLC(3);
     }
-    
+    private void CSNPI(){
+        if(memoria.readOcta(line.getY() * 8) <= 0)
+            memoria.storeOcta(line.getX() * 8, line.getZ() * 8);
+               
+        incrementaLC(3);
+    }
     private void ZSN(){
-        long y, z, zero = 0;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        if(y < 0){
-             // Registrador x recebe o resultado
-             generalRegisters[line.getX().getIndex()].setContent(z);
-        }
+        if(memoria.readOcta(line.getY() * 8) < 0)
+            memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getZ() * 8));
         else
-            generalRegisters[line.getX().getIndex()].setContent(zero);
-        
-        incrementaPC();
+            memoria.storeOcta(line.getX() * 8, 0);
+            
+        incrementaLC(3);
+    }
+    private void ZSNI(){
+        if(memoria.readOcta(line.getY() * 8) < 0)
+            memoria.storeOcta(line.getX() * 8, line.getZ());
+        else
+            memoria.storeOcta(line.getX() * 8, 0);
+            
+        incrementaLC(3);
     }
     private void ZSZ(){
-        long y, z, zero = 0;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        if(y == 0){
-             // Registrador x recebe o resultado
-             generalRegisters[line.getX().getIndex()].setContent(z);
-        }
+        if(memoria.readOcta(line.getY() * 8) == 0)
+            memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getZ() * 8));
         else
-            generalRegisters[line.getX().getIndex()].setContent(zero);
-        
-        incrementaPC();
+            memoria.storeOcta(line.getX() * 8, 0);
+            
+        incrementaLC(3);
+    }
+    private void ZSZI(){
+        if(memoria.readOcta(line.getY() * 8) == 0)
+            memoria.storeOcta(line.getX() * 8, line.getZ());
+        else
+            memoria.storeOcta(line.getX() * 8, 0);
+            
+        incrementaLC(3);
     }
     private void ZSP(){
-        long y, z, zero = 0;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        if(y > 0){
-             // Registrador x recebe o resultado
-             generalRegisters[line.getX().getIndex()].setContent(z);
-        }
+        if(memoria.readOcta(line.getY() * 8) > 0)
+            memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getZ() * 8));
         else
-            generalRegisters[line.getX().getIndex()].setContent(zero);
-        
-        incrementaPC();
+            memoria.storeOcta(line.getX() * 8, 0);
+            
+        incrementaLC(3);
+    }
+    private void ZSPI(){
+        if(memoria.readOcta(line.getY() * 8) > 0)
+            memoria.storeOcta(line.getX() * 8, line.getZ());
+        else
+            memoria.storeOcta(line.getX() * 8, 0);
+            
+        incrementaLC(3);
     }
     private void ZSOD(){
-        long y, z, zero = 0;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        if(y % 2 == 1){
-             // Registrador x recebe o resultado
-             generalRegisters[line.getX().getIndex()].setContent(z);
-        }
+        if(memoria.readOcta(line.getY() * 8) % 2 == 1)
+            memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getZ() * 8));
         else
-            generalRegisters[line.getX().getIndex()].setContent(zero);
-        
-        incrementaPC();
+            memoria.storeOcta(line.getX() * 8, 0);
+            
+        incrementaLC(3);
+    }
+    private void ZSODI(){
+        if(memoria.readOcta(line.getY() * 8) % 2 == 1)
+            memoria.storeOcta(line.getX() * 8, line.getZ());
+        else
+            memoria.storeOcta(line.getX() * 8, 0);
+            
+        incrementaLC(3);
     }
     private void ZSEV(){
-        long y, z, zero = 0;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        if(y % 2 == 0){
-             // Registrador x recebe o resultado
-             generalRegisters[line.getX().getIndex()].setContent(z);
-        }
+        if(memoria.readOcta(line.getY() * 8) % 2 == 0)
+            memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getZ() * 8));
         else
-            generalRegisters[line.getX().getIndex()].setContent(zero);
-        
-        incrementaPC();
+            memoria.storeOcta(line.getX() * 8, 0);
+            
+        incrementaLC(3);
+    }
+    private void ZSEVI(){
+        if(memoria.readOcta(line.getY() * 8) % 2 == 0)
+            memoria.storeOcta(line.getX() * 8, line.getZ());
+        else
+            memoria.storeOcta(line.getX() * 8, 0);
+            
+        incrementaLC(3);
     }
     private void ZSNZ(){
-        long y, z, zero = 0;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        if(y != 0){
-             // Registrador x recebe o resultado
-             generalRegisters[line.getX().getIndex()].setContent(z);
-        }
+        if(memoria.readOcta(line.getY() * 8) != 0)
+            memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getZ() * 8));
         else
-            generalRegisters[line.getX().getIndex()].setContent(zero);
-        
-        incrementaPC();
+            memoria.storeOcta(line.getX() * 8, 0);
+            
+        incrementaLC(3);
+    }
+    private void ZSNZI(){
+        if(memoria.readOcta(line.getY() * 8) != 0)
+            memoria.storeOcta(line.getX() * 8, line.getZ());
+        else
+            memoria.storeOcta(line.getX() * 8, 0);
+            
+        incrementaLC(3);
     }
     private void ZSNN(){
-        long y, z, zero = 0;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        if(y >= 0){
-             // Registrador x recebe o resultado
-             generalRegisters[line.getX().getIndex()].setContent(z);
-        }
+        if(memoria.readOcta(line.getY() * 8) >= 0)
+            memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getZ() * 8));
         else
-            generalRegisters[line.getX().getIndex()].setContent(zero);
-        
-        incrementaPC();
+            memoria.storeOcta(line.getX() * 8, 0);
+            
+        incrementaLC(3);
+    }
+    private void ZSNNI(){
+        if(memoria.readOcta(line.getY() * 8) >= 0)
+            memoria.storeOcta(line.getX() * 8, line.getZ());
+        else
+            memoria.storeOcta(line.getX() * 8, 0);
+            
+        incrementaLC(3);
     }
     private void ZSNP(){
-        long y, z, zero = 0;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        if(y <= 0){
-             // Registrador x recebe o resultado
-             generalRegisters[line.getX().getIndex()].setContent(z);
-        }
+        if(memoria.readOcta(line.getY() * 8) <= 0)
+            memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getZ() * 8));
         else
-            generalRegisters[line.getX().getIndex()].setContent(zero);
-        
-        incrementaPC();
+            memoria.storeOcta(line.getX() * 8, 0);
+            
+        incrementaLC(3);
+    }
+    private void ZSNPI(){
+        if(memoria.readOcta(line.getY() * 8) <= 0)
+            memoria.storeOcta(line.getX() * 8, line.getZ());
+        else
+            memoria.storeOcta(line.getX() * 8, 0);
+            
+        incrementaLC(3);
     }
     
+    
     private void SL(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        if(y <= 0){
-             // Registrador x recebe o resultado
-             generalRegisters[line.getX().getIndex()].setContent(z);
-        }
-        else
-            generalRegisters[line.getX().getIndex()].setContent(y << z);
-        
-        incrementaPC();
+        memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getY() * 8) << memoria.readOcta(line.getZ() * 8));
+        incrementaLC(3);
+    }
+    private void SLI(){
+        memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getY() * 8) << line.getZ());
+        incrementaLC(3);
     }
     private void SR(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        if(y <= 0){
-             // Registrador x recebe o resultado
-             generalRegisters[line.getX().getIndex()].setContent(z);
-        }
-        else
-            generalRegisters[line.getX().getIndex()].setContent(y >> z);
-        
-        incrementaPC();
+        memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getY() * 8) >> memoria.readOcta(line.getZ() * 8));
+        incrementaLC(3);
+    }
+    private void SRI(){
+        memoria.storeOcta(line.getX() * 8, memoria.readOcta(line.getY() * 8) >> line.getZ());
+        incrementaLC(3);
     }
     
     // Loads and Stores
     private void LDB(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Registrador x recebe o resultado
-        generalRegisters[line.getX().getIndex()].setContent(memoria.readByte((int)(y+z + pontoMontagem)));
-        
-        incrementaPC();
+        memoria.storeByte( memoria.readOcta( (line.getX() * 8)), memoria.readByte( (memoria.readOcta( line.getY() * 8) + memoria.readOcta(line.getZ() * 8))));
+        incrementaLC(3);
+    }
+    private void LDBI(){
+        memoria.storeByte(memoria.readOcta( (line.getX() * 8)), memoria.readByte( (memoria.readOcta( line.getY() * 8) +line.getZ())));
+        incrementaLC(3);
     }
     private void LDW(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Registrador x recebe o resultado
-        generalRegisters[line.getX().getIndex()].setContent(memoria.readWyde((int)(y+z + pontoMontagem)));
-        
-        incrementaPC();
+        memoria.storeWyde(memoria.readOcta( (line.getX() * 8)), memoria.readWyde( (memoria.readOcta( line.getY() * 8) + memoria.readOcta(line.getZ() * 8))));
+        incrementaLC(3);
+    }
+    private void LDWI(){
+        memoria.storeWyde(memoria.readOcta( (line.getX() * 8)), memoria.readWyde( (memoria.readOcta( line.getY() * 8) + line.getZ())));
+        incrementaLC(3);
     }
     private void LDT(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Registrador x recebe o resultado
-        generalRegisters[line.getX().getIndex()].setContent(memoria.readTetra((int)(y+z + pontoMontagem)));
-        
-        incrementaPC();
+        memoria.storeTetra(memoria.readOcta( (line.getX() * 8)), memoria.readTetra( (memoria.readOcta( line.getY() * 8) + memoria.readOcta(line.getZ() * 8))));
+        incrementaLC(3);
+    }
+    private void LDTI(){
+        memoria.storeTetra(memoria.readOcta( (line.getX() * 8)), memoria.readTetra( (memoria.readOcta( line.getY() * 8) + line.getZ())));
+        incrementaLC(3);
     }
     private void LDO(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Registrador x recebe o resultado
-        generalRegisters[line.getX().getIndex()].setContent(memoria.readOcta((int)(y+z + pontoMontagem)));
-        
-        incrementaPC();
+        memoria.storeOcta(memoria.readOcta( (line.getX() * 8)), memoria.readOcta( (memoria.readOcta( line.getY() * 8) + memoria.readOcta(line.getZ() * 8))));
+        incrementaLC(3);
+    }
+    private void LDOI(){
+        memoria.storeOcta(memoria.readOcta( (line.getX() * 8)), memoria.readOcta( (memoria.readOcta( line.getY() * 8) + line.getZ())));
+        incrementaLC(3);
     }
     
     private void STB(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Memoria recebe o valor de X
-        memoria.storeByte(pontoMontagem + (int)(y + z), generalRegisters[line.getX().getIndex()].getContent());
-        
-        incrementaPC();
+       memoria.storeByte((memoria.readOcta(line.getY() * 8) + memoria.readOcta(line.getZ() * 8)), memoria.readByte( line.getX() * 8));
+       incrementaLC(3);
+    }
+    private void STBI(){
+       memoria.storeByte((memoria.readOcta(line.getY() * 8) + line.getZ()), memoria.readByte( line.getX() * 8));
+       incrementaLC(3);
     }
     private void STW(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Memoria recebe o valor de X
-        memoria.storeWyde(pontoMontagem + (int)(y + z), generalRegisters[line.getX().getIndex()].getContent());
-        
-        incrementaPC();
+        memoria.storeWyde((memoria.readOcta(line.getY() * 8) + memoria.readOcta(line.getZ() * 8)), memoria.readWyde( line.getX() * 8));
+        incrementaLC(3);
+    }
+    private void STWI(){
+        memoria.storeWyde((memoria.readOcta(line.getY() * 8) + line.getZ()), memoria.readWyde( line.getX() * 8));
+        incrementaLC(3);
     }
     private void STT(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Memoria recebe o valor de X
-        memoria.storeTetra(pontoMontagem + (int)(y + z), generalRegisters[line.getX().getIndex()].getContent());
-        
-        incrementaPC();
+        memoria.storeTetra((memoria.readOcta(line.getY() * 8) + memoria.readOcta(line.getZ() * 8)), memoria.readTetra( line.getX() * 8));
+        incrementaLC(3);
+    }
+    private void STTI(){
+        memoria.storeTetra((memoria.readOcta(line.getY() * 8) + line.getZ()), memoria.readTetra( line.getX() * 8));
+        incrementaLC(3);
     }
     private void STO(){
-        long y, z;
-        
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Memoria recebe o valor de X
-        memoria.storeOcta(pontoMontagem + (int)(y + z), generalRegisters[line.getX().getIndex()].getContent());
-        
-        incrementaPC();
+        memoria.storeOcta((memoria.readOcta(line.getY() * 8) + memoria.readOcta(line.getZ() * 8)), memoria.readOcta( line.getX() * 8));
+        incrementaLC(3);
     }
-
+    private void STOI(){
+        memoria.storeOcta((memoria.readOcta(line.getY() * 8) + line.getZ()), memoria.readOcta( line.getX() * 8));
+        incrementaLC(3);
+    }
+    
     private void NEG(){
-        long y, z;
-        
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y sempre é immediate
-        y = line.getY().getImmediate();
-        
-        // Registrador X recebe o resultado
-        generalRegisters[line.getX().getIndex()].setContent(y - z);
-        
-        incrementaPC();        
+        memoria.storeOcta(line.getX() * 8, line.getY() - memoria.readOcta(line.getZ() * 8));
+        incrementaLC(3);
+    }
+    private void NEGI(){
+        memoria.storeOcta(line.getX() * 8, line.getY() - line.getZ());
+        incrementaLC(3);
     }
     
     private void CMP(){
-        long y, z, result;
+        long result;
         
-        // Operador z recebe o valor desejado (pode ser imediato)
-        if(line.getZ().isImmediate())   z = line.getZ().getImmediate();
-        else                            z = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        // Operador y recebe seu valor desejado (Indice para registrador)
-        y = generalRegisters[line.getZ().getIndex()].getContent();
-        
-        if(y < z)
+        if(memoria.readOcta(line.getY() * 8) < memoria.readOcta(line.getZ() * 8))
             result = -1;
-        else if(y == z)
+        else if(memoria.readOcta(line.getY() * 8) == memoria.readOcta(line.getZ() * 8))
             result = 0;
         else // if(y > z)
             result = 1;   
         
         // Registrador x recebe o resultado
-        generalRegisters[line.getX().getIndex()].setContent(result);
+        memoria.storeOcta(line.getX() * 8, result);
         
-        incrementaPC();
+        incrementaLC(3);
+    }
+    private void CMPI(){
+        long result;
+        
+        if(memoria.readOcta(line.getY() * 8) < line.getZ())
+            result = -1;
+        else if(memoria.readOcta(line.getY() * 8) == line.getZ())
+            result = 0;
+        else // if(y > z)
+            result = 1;   
+        
+        // Registrador x recebe o resultado
+        memoria.storeOcta(line.getX() * 8, result);
+        
+        incrementaLC(3);
     }
     
     // Desvios
     // Nessas instruções, deve receber um valor imediato de acordo com o label (Num. PC nesse caso)
     private void BN(){
-        long y;
-        
-        // y é sempre imediato, não há z
-        y = line.getY().getImmediate();
-        
         // Caso a condição seja verdadeira
-        if(generalRegisters[line.getX().getIndex()].getContent() < 0)
-            jump(y);        
+        if(memoria.readOcta( line.getX()) < 0)
+            $LC = line.getY();        
     }
     private void BP(){
-        long y;
-        
-        // y é sempre imediato, não há z
-        y = line.getY().getImmediate();
-        
         // Caso a condição seja verdadeira
-        if(generalRegisters[line.getX().getIndex()].getContent() > 0)
-            jump(y);        
+        if(memoria.readOcta( line.getX()) > 0)
+            $LC = line.getY(); 
     }
     private void BZ(){
-        long y;
-        
-        // y é sempre imediato, não há z
-        y = line.getY().getImmediate();
-        
         // Caso a condição seja verdadeira
-        if(generalRegisters[line.getX().getIndex()].getContent() == 0)
-            jump(y);        
+        if(memoria.readOcta( line.getX()) == 0)
+            $LC = line.getY();   
     }
     private void BNZ(){
-        long y;
-        
-        // y é sempre imediato, não há z
-        y = line.getY().getImmediate();
-        
         // Caso a condição seja verdadeira
-        if(generalRegisters[line.getX().getIndex()].getContent() != 0)
-            jump(y);        
+        if(memoria.readOcta( line.getX()) != 0)
+            $LC = line.getY();         
     }
     private void BNN(){
-        long y;
-        
-        // y é sempre imediato, não há z
-        y = line.getY().getImmediate();
-        
         // Caso a condição seja verdadeira
-        if(generalRegisters[line.getX().getIndex()].getContent() >= 0)
-            jump(y);        
+        if(memoria.readOcta( line.getX()) >= 0)
+            $LC = line.getY();     
     }
     private void BNP(){
-        long y;
-        
-        // y é sempre imediato, não há z
-        y = line.getY().getImmediate();
-        
-        // Caso a condição seja verdadeira
-        if(generalRegisters[line.getX().getIndex()].getContent() <= 0)
-            jump(y);        
+       // Caso a condição seja verdadeira
+        if(memoria.readOcta( line.getX()) <= 0)
+            $LC = line.getY();     
     }
     private void BOD(){
-        long y;
-        
-        // y é sempre imediato, não há z
-        y = line.getY().getImmediate();
-        
-        // Caso a condição seja verdadeira
-        if(generalRegisters[line.getX().getIndex()].getContent() % 2 == 1)
-            jump(y);        
+       // Caso a condição seja verdadeira
+        if(memoria.readOcta( line.getX()) % 2 == 1)
+            $LC = line.getY();      
     }
     private void BEV(){
-        long y;
-        
-        // y é sempre imediato, não há z
-        y = line.getY().getImmediate();
-        
         // Caso a condição seja verdadeira
-        if(generalRegisters[line.getX().getIndex()].getContent() % 2 == 0)
-            jump(y);        
+        if(memoria.readOcta( line.getX()) % 2 == 0)
+            $LC = line.getY();      
     }
     
     private void JMP(){
-        long x = line.getX().getImmediate();
-        jump(x);
-        
+        $LC = line.getY(); 
     }
 }
