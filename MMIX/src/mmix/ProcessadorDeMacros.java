@@ -1,7 +1,9 @@
 package trabalhops;
 
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -16,58 +18,38 @@ public class ProcessadorDeMacros {
     public void getMacro(String label[], String operandos[], int nome_macro, String linha) {
 
         try {
-            //FileOutputStream arquivo2 = new FileOutputStream("macro.txt");
-            //PrintWriter pw = new PrintWriter(arquivo2);
-
+            
             Writer pw = new BufferedWriter(new FileWriter("macro".concat(Integer.toString(nome_macro)).concat(".txt"), true));
-
             int i;
 
-            /*for (i = 0; i < label.length; i++) {
-                
-                if (i == (label.length - 1))
-                    pw.append(label[i]);
-                else
-                    pw.append(label[i] + " "); 
-            }
-
-            for (i = 1; i < operandos.length; i++) {
-                
-                if (i == (operandos.length - 1))
-                    pw.append(operandos[i]);
-                else
-                    if (i == 1)
-                        pw.append(", " + operandos[i] + ", ");
-                    else 
-                        pw.append(", " + operandos[i] + ", ");
-            }*/
             pw.append(linha);
             pw.append("\n");
             pw.close();
         } catch (Exception e) {
             System.out.println("ashuash");
         }
+        
 
     }
-
-    public PrintWriter getMacroAssembly(PrintWriter pw, int nome_macro, String label1[], String operandos1[], Map<String, Integer> macroMap, HashMap operandosMap, HashMap montadorMap, HashMap macroOperandos, HashMap tabelaDeUso) {
-
+                                                        
+    public PrintWriter getMacroAssembly(PrintWriter pw, int nome_macro, String label1[], String operandos1[], HashMap operandosMap, HashMap<String, Integer> montadorMap, HashMap macroOperandos, HashMap tabelaDeUso) {
+        
         String nome_codigo;
         String linha;
         String palavras[];
         String operandos[];
         nome_codigo = "macro".concat(Integer.toString(nome_macro)).concat(".txt");
         int i = 0, flag_operandos = 0, k = 0, flag_break = 0, loop = 0, flag_nextline = 0, flag_macro = 0;
-
+      
         try {
             FileInputStream arquivo = new FileInputStream(nome_codigo);
             InputStreamReader input = new InputStreamReader(arquivo);
             BufferedReader instrucoes = new BufferedReader(input);
 
-            linha = instrucoes.readLine();
-
+            instrucoes.readLine();
+            
             while ((linha = instrucoes.readLine()) != null) {
-                
+  
                 if (linha.contains(",")) {
 
                     operandos = linha.split(", ");
@@ -82,32 +64,27 @@ public class ProcessadorDeMacros {
                 if (flag_nextline == 0 && flag_macro == 0) {
                     if (palavras.length == 3) {
 
-                        /*if (operandosMap.containsKey(palavras[0])) {
-                            pw.print(operandosMap.get(palavras[0]) + " ");
-                        } else {
-                            System.out.println("Erro! Label não encontrado\nO código não pode ser montado");
-                            break;
-                        }*/
-                        //System.out.println(palavras[1]);
-                        if (montadorMap.containsKey(macroOperandos.get(palavras[1]))) {
+                        if (montadorMap.containsKey((palavras[1]))) {
 
-                            pw.print(montadorMap.get(macroOperandos.get(palavras[1])) + " a ");
+                            pw.print(montadorMap.get((palavras[1])) + " ");
                         } else {
-                            //System.out.println(montadorMap.get(palavras[i]));
-                            System.out.println("Erro! Instrução não encontrada\nO código não pode ser montado");
+                          
+                            System.out.println("Erro! InstruÃ§Ã£o na macro nÃ£o encontrada\nO cÃ³digo nÃ£o pode ser montado");
+                            System.exit(1);
                             break;
                         }
 
                         if (operandosMap.containsKey(macroOperandos.get(palavras[2]))) {
 
-                            pw.print(operandosMap.get(macroOperandos.get(palavras[2])) + " r ");
+                            pw.print(operandosMap.get(macroOperandos.get(palavras[2])) + " ");
                         } else {
 
                             if (tabelaDeUso.containsKey(macroOperandos.get(palavras[2]))) {
 
-                                pw.print("00 a ");
+                                pw.print("00 ");
                             } else {
-                                System.out.println("Erro! Operando 1 não encontrado\nO código não pode ser montado");
+                                System.out.println("Erro! Operando 1 na macro nÃ£o encontrado\nO cÃ³digo nÃ£o pode ser montado");
+                                System.exit(1);
                                 break;
                             }
                         }
@@ -115,64 +92,69 @@ public class ProcessadorDeMacros {
                     } else {
 
                         if (palavras.length == 2) {
-
-                            if (montadorMap.containsKey(macroOperandos.get(palavras[0]))) {
-
-                                pw.print(montadorMap.get(macroOperandos.get(palavras[0])) + " r ");
+                           
+                            if (montadorMap.containsKey(palavras[0])) {
+                                
+                                pw.print(montadorMap.get((palavras[0])) + " ");
                             } else {
 
-                                System.out.println("Erro! Instrução não encontrada\nO código não pode ser montado");
+                                System.out.println("Erro! InstruÃ§Ã£o na macro nÃ£o encontrada\nO cÃ³digo nÃ£o pode ser montado");
+                                System.exit(1);
                                 break;
                             }
 
                             if (operandosMap.containsKey(macroOperandos.get(palavras[1]))) {
 
-                                pw.print(operandosMap.get(macroOperandos.get(palavras[1])) + " r ");
+                                pw.print(operandosMap.get(macroOperandos.get(palavras[1])) + " ");
                             } else {
 
                                 if (tabelaDeUso.containsKey(macroOperandos.get(palavras[1]))) {
 
-                                    pw.print("00 a ");
+                                    pw.print("00 ");
                                 } else {
 
-                                    System.out.println("Erro! Operando 1 não encontrado\nO código não pode ser montado");
+                                    System.out.println("Erro! Operando 1 na macro nÃ£o encontrado\nO cÃ³digo nÃ£o pode ser montado");
+                                    System.exit(1);
                                     break;
                                 }
                             }
 
                         } else {
-                            System.out.println("Erro! Você está tentando utilizar mais de um label ou mais de uma instrução\nO código não pode ser montado");
+                            System.out.println("Erro! VocÃª estÃ¡ tentando utilizar mais de um label ou mais de uma instruÃ§Ã£o na macro\nO cÃ³digo nÃ£o pode ser montado");
+                            System.exit(1);
                         }
                     }
 
                     for (i = 1; i < operandos.length; i++) {
-
-                        if (operandosMap.containsKey(macroOperandos.get(palavras[i]))) {
-
-                            pw.print(operandosMap.get(macroOperandos.get(palavras[i])) + " r ");
+                        
+                        if (operandosMap.containsKey(macroOperandos.get(operandos[i]))) {
+                            
+                            pw.print(operandosMap.get(macroOperandos.get(operandos[i])) + " ");
                         } else {
 
-                            if (tabelaDeUso.containsKey(macroOperandos.get(palavras[i]))) {
+                            if (tabelaDeUso.containsKey(macroOperandos.get(operandos[i]))) {
 
-                                pw.print("00 a ");
+                                pw.print("00 ");
                             } else {
 
-                                System.out.println("Erro! Operando " + (i + 1) + " não encontrado\nO código não pode ser montado");
+                                System.out.println("Erro! Operando " + (i + 1) + " na macro nÃ£o encontrado\nO cÃ³digo nÃ£o pode ser montado");
                                 break;
                             }
                         }
-                    }
-                    pw.print("\n");
+                    }    
                 }
+                
+                pw.print("\n");
                 flag_operandos = 0;
                 flag_nextline = 0;
-            }
-            
-            
+            } 
         }
+        
+        
         catch (Exception e) {
             
         }
+        
         return pw;
     }
 }
