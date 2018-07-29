@@ -1,4 +1,4 @@
-package trabalhops;
+package mmix;
 
 
 import java.io.BufferedReader;

@@ -1,5 +1,5 @@
 //ESTOU CONSIDERANDO QUE OS LABELS NÃƒO PODEM CONTER "$"
-package trabalhops;
+package mmix;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
