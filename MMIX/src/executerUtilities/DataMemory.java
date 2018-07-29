@@ -5,19 +5,24 @@
  */
 package executerUtilities;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author snore
  */
 public class DataMemory {
-    private byte[] memArray;
+    private ArrayList<Byte> memArray;
     
     public DataMemory(){
-        memArray = new byte[102400];
+        memArray = new ArrayList();
+        for(int i = 0; i < 262144; i++)
+            memArray.add(i, (byte)0);
+        
     }
     
     public long readByte(long byteIndex){
-        long aux = memArray[(int)byteIndex];
+        long aux = memArray.get((int)byteIndex);
         
         if(aux < 0)
             aux = aux & 255;
@@ -30,7 +35,7 @@ public class DataMemory {
        
        // MMIX is Big Endian
        for(int i=1; i>=0; i--, index++){
-           aux = memArray[index];
+           aux = memArray.get(index);
            if(aux < 0)
                aux = aux & 255;           
            
@@ -47,7 +52,7 @@ public class DataMemory {
         
         // MMIX is Big Endian
         for(int i=3; i>=0; i--, index++){
-            aux = memArray[index];
+            aux = memArray.get(index);
             if(aux < 0)
                aux = aux & 255;
             
@@ -64,7 +69,7 @@ public class DataMemory {
         
         // MMIX is Big Endian
         for(int i=7; i>=0; i--, index++){
-            aux = memArray[index];
+            aux = memArray.get(index);
             if(aux < 0)
                aux = aux & 255;
             
@@ -78,7 +83,7 @@ public class DataMemory {
     
     public void storeByte(long byteIndex, long value){
         byte v = (byte)value;
-        memArray[(int)byteIndex] = v;
+        memArray.set((int)byteIndex, v);
     }
     public void storeWyde(long byteIndex, long value){
        int index = ((int)byteIndex / 2 * 2) + 1;
@@ -88,7 +93,7 @@ public class DataMemory {
        for(int i=0; i<2; i++, index--){
            v = (byte)value;
            value = value >> 8;
-           memArray[index] = v;
+           memArray.set(index, v);
        }
 
     }
@@ -101,7 +106,7 @@ public class DataMemory {
        for(int i=0; i<4; i++, index--){
            v = (byte)value;
            value = value >> 8;
-           memArray[index] = v;
+           memArray.set(index, v);
        }
         
     }
@@ -114,7 +119,7 @@ public class DataMemory {
        for(int i=0; i<8; i++, index--){
            v = (byte)value;
            value = value >> 8;
-           memArray[index] = v;
+           memArray.set(index, v);
        }
         
     }
@@ -124,7 +129,7 @@ public class DataMemory {
      * 
      * @return A memoria de dados
      */
-    public byte[] getMemory(){
+    public ArrayList getMemory(){
         return memArray;
     }
     
