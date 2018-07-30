@@ -1,0 +1,3 @@
+INTDEF MOD2
+ADD $1, $1, 1
+MOD2 ADD $2, $2, 300
