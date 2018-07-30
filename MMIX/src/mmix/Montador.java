@@ -20,10 +20,10 @@ public class Montador {
     private HashMap tabelaDeUso = new HashMap();
     private HashMap tabelaDef = new HashMap();
     private HashMap<String, String> macroOperandos = new HashMap<>();
-    Map<String, Integer> macroMap = new HashMap<>();
-    ProcessadorDeMacros macro = new ProcessadorDeMacros();
+    private Map<String, Integer> macroMap = new HashMap<>();
+    private ProcessadorDeMacros macro = new ProcessadorDeMacros();
 
-    public void getInstructions() {
+    private void getInstructions() {
 
         String linha;
         String palavras[] = new String[2];
@@ -65,7 +65,7 @@ public class Montador {
         return num;
     }
     
-    public boolean getCode() {
+    private boolean getCode() {
 
         String linha;
         String operandos[];
@@ -432,7 +432,7 @@ public class Montador {
         return true;
     }
 
-    public void getAssembly(int cont) {
+    private void getAssembly(int cont) {
 
         String linha;
         String operandos[];
@@ -685,7 +685,7 @@ public class Montador {
         }
     }
 
-    public int getMacroCode(int j, PrintWriter pw, PrintWriter def, PrintWriter uso, int nome_macro, int count_add, String label1[], String operandos1[]) {
+    private int getMacroCode(int j, PrintWriter pw, PrintWriter def, PrintWriter uso, int nome_macro, int count_add, String label1[], String operandos1[]) {
 
         String linha;
         String nome_codigo;
@@ -956,7 +956,7 @@ public class Montador {
         return count_add;
     }
 
-    public void deleteMacro() {
+    private void deleteMacro() {
         
         int value;
        
@@ -969,8 +969,13 @@ public class Montador {
         }
     }
 
-    public boolean verificaKey(String instrucao) {
+    private boolean verificaKey(String instrucao) {
 
         return montadorMap.containsKey(instrucao);
+    }
+    
+    public void assemble() {
+        getInstructions();
+        getCode();
     }
 }

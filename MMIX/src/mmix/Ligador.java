@@ -14,11 +14,17 @@ import java.util.logging.Logger;
 
 public class Ligador {
     
-    private ArrayList<Integer> lengths = new ArrayList();
-    private HashMap<String, String> GST = new HashMap();
-    private ArrayList<HashMap<Integer, String>> useTables = new ArrayList();
+    private ArrayList<Integer> lengths;
+    private HashMap<String, String> GST;
+    private ArrayList<HashMap<Integer, String>> useTables;
     
-    public ArrayList<BufferedReader> getFiles(String fileName, int charIndex){
+    public Ligador() {
+        lengths = new ArrayList();
+        GST = new HashMap();
+        useTables = new ArrayList();
+    }
+    
+    private ArrayList<BufferedReader> getFiles(String fileName, int charIndex){
         int i = 1;
         char done = 0;
    
@@ -37,7 +43,7 @@ public class Ligador {
         return readers;
     }
     
-    public void getLengths() throws IOException {
+    private void getLengths() throws IOException {
         ArrayList<BufferedReader> readers = getFiles("assembly*.txt", 8);
         String linha[];
         int length;
@@ -56,7 +62,7 @@ public class Ligador {
         }
     }
     
-    public void createGST() throws IOException {
+    private void createGST() throws IOException {
         ArrayList<BufferedReader> readers = getFiles("definition_table*.txt", 16);
         
         String linha[];
@@ -84,7 +90,7 @@ public class Ligador {
         }
     }
     
-    public void getUseTables() throws IOException {
+    private void getUseTables() throws IOException {
         ArrayList<BufferedReader> readers = getFiles("use_table*.txt", 9);
         
         String linha[];
@@ -127,6 +133,7 @@ public class Ligador {
                     break;
                 }
                 linha = read.split(" ");
+                int opcode = Integer.parseInt(linha[0]);
                 for(int j = 0; j < linha.length; ++j) {
                     if(useTables.get(i).containsKey(LC)) {
                         String label = useTables.get(i).get(LC);
@@ -137,7 +144,9 @@ public class Ligador {
                         linha[j] = Integer.toString(Integer.parseInt(linha[j]) + Integer.parseInt(GST.get(label)));
                     }
                     else if(j != 0) {
-                        linha[j] = Integer.toString(Integer.parseInt(linha[j]) + offset);
+                        if(!((opcode % 2 == 1 && (j == 3)) || (j == 2 && (opcode == 52 || opcode == 53)))) {
+                            linha[j] = Integer.toString(Integer.parseInt(linha[j]) + offset);
+                        }
                     }
                     if(j > 0) {
                         pw.print(" ");

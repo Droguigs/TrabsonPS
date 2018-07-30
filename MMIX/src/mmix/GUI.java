@@ -77,8 +77,7 @@ public class GUI extends JPanel{
         public void actionPerformed(ActionEvent e) {
             Montador montador = new Montador();
             Ligador ligador = new Ligador();
-            montador.getInstructions();
-            montador.getCode();
+            montador.assemble();
             try {
                 ligador.link();
             }
