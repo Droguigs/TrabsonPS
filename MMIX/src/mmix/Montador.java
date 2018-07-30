@@ -34,7 +34,7 @@ public class Montador {
             InputStreamReader input = new InputStreamReader(arquivo);
             BufferedReader instrucoes = new BufferedReader(input);
             
-            while (i < 45) {
+            while (i < 46) {
 
                 linha = instrucoes.readLine();
                 palavras = linha.split(" ");

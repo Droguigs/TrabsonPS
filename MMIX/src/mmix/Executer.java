@@ -75,6 +75,7 @@ public class Executer {
         instructions.put(0X44, () -> BP());
         instructions.put(0X4A, () -> BNZ());
         instructions.put(0X48, () -> BNN());
+        instructions.put(0X40, () -> BN());
         instructions.put(0X4C, () -> BNP());
         instructions.put(0X46, () -> BOD());
         instructions.put(0X4E, () -> BEV());
@@ -128,12 +129,14 @@ public class Executer {
         String[] parts;
         Long[] param = new Long[3];
         
+        
         try {
             
             FileReader fileReader = new FileReader(fileName);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
 
             while((line = bufferedReader.readLine()) != null) {
+                
                 parts = line.split(" ");
                 
                 // Recebe o opcode e os parametros
@@ -141,20 +144,19 @@ public class Executer {
                 for(i=1; i<parts.length; i++)
                     param[i-1] = Long.valueOf(parts[i]);
                 
-                // Preenche o array de parametros com null, caso nao tenha o valor
-                for(i = parts.length-1; i<3; i++)
-                    param[i] = null;
-                
                 // Insere na tabela de linhas de codigo
-                code[PC] = new CodeLine(opcode, param[0], param[1], param[2]);
+                if(parts.length == 4)
+                    code[PC] = new CodeLine(opcode, param[0], param[1], param[2]);
+                else if(parts.length == 3)
+                    code[PC] = new CodeLine(opcode, param[0], param[1]);
+                else if(parts.length == 2)
+                    code[PC] = new CodeLine(opcode, param[0]);
                 
                 // Insere relacao LC - PC na hash
                 lc2pc.put(currentLC, PC);
-                
                 // Incrementa ambos
                 PC = PC + 1;
                 currentLC = currentLC + parts.length;
-                        
             }   
 
             bufferedReader.close();         
@@ -168,13 +170,12 @@ public class Executer {
         
         // Executa o codigo
         $LC = 0;
-        while($LC < currentLC){
+        while($LC < currentLC - 1){
             this.line = code[lc2pc.get($LC)];   // Primeira instrucao
             
             if(this.line.getCode() == 0)
                 return;
             
-            System.out.println("" + this.line.getCode());
             execute(this.line);
             
         }
@@ -636,7 +637,6 @@ public class Executer {
         
         // Registrador x recebe o resultado
         memoria.storeOcta(line.getX() * 8, result);
-        
         incrementaLC(3);
     }
     private void CMPI(){
@@ -659,46 +659,63 @@ public class Executer {
     // Nessas instruções, deve receber um valor imediato de acordo com o label (Num. PC nesse caso)
     private void BN(){
         // Caso a condição seja verdadeira
-        if(memoria.readOcta( line.getX()) < 0)
-            $LC = line.getY();        
+        if(memoria.readOcta( line.getX() * 8) < 0)
+            $LC = line.getY();    
+        else
+            incrementaLC(2);     
     }
     private void BP(){
         // Caso a condição seja verdadeira
-        if(memoria.readOcta( line.getX()) > 0)
-            $LC = line.getY(); 
+        if(memoria.readOcta( line.getX() * 8) > 0)
+            $LC = line.getY();  
+        else
+            incrementaLC(2);
     }
     private void BZ(){
         // Caso a condição seja verdadeira
-        if(memoria.readOcta( line.getX()) == 0)
+        if(memoria.readOcta( line.getX() * 8) == 0)
             $LC = line.getY();   
+        else
+            incrementaLC(2); 
     }
     private void BNZ(){
         // Caso a condição seja verdadeira
-        if(memoria.readOcta( line.getX()) != 0)
-            $LC = line.getY();         
+        if(memoria.readOcta( line.getX() * 8) != 0)
+            $LC = line.getY();   
+        else
+            incrementaLC(2);       
     }
     private void BNN(){
         // Caso a condição seja verdadeira
-        if(memoria.readOcta( line.getX()) >= 0)
-            $LC = line.getY();     
+        if(memoria.readOcta( line.getX() * 8) >= 0)
+            $LC = line.getY();  
+        else
+            incrementaLC(2);    
     }
     private void BNP(){
        // Caso a condição seja verdadeira
-        if(memoria.readOcta( line.getX()) <= 0)
-            $LC = line.getY();     
+        if(memoria.readOcta( line.getX() * 8) <= 0)
+            $LC = line.getY();   
+        else
+            incrementaLC(2);   
     }
     private void BOD(){
        // Caso a condição seja verdadeira
-        if(memoria.readOcta( line.getX()) % 2 == 1)
-            $LC = line.getY();      
+        if(memoria.readOcta( line.getX() * 8) % 2 == 1)
+            $LC = line.getY(); 
+        else
+            incrementaLC(2);
     }
     private void BEV(){
         // Caso a condição seja verdadeira
-        if(memoria.readOcta( line.getX()) % 2 == 0)
-            $LC = line.getY();      
+        if(memoria.readOcta( line.getX() * 8) % 2 == 0)
+            $LC = line.getY();  
+        else
+            incrementaLC(2);
+        
     }
     
     private void JMP(){
-        $LC = line.getY(); 
+        $LC = line.getX();
     }
 }

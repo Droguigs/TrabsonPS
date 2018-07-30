@@ -22,6 +22,17 @@ public class CodeLine {
         this.$Y = y;
         this.$Z = z;
     }
+    public CodeLine(Integer code, Long x, Long y) {
+        this.code = code;
+        this.$X = x;
+        this.$Y = y;
+        this.$Z = 0;
+    }
+    public CodeLine(Integer code, Long x) {
+        this.code = code;
+        this.$X = x;
+    }
+    
     
     public int getCode(){
         return code;
