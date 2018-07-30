@@ -1,9 +1,9 @@
 MCDEFN
 divis DI $8, $8
-DIV $4, $8, $9
+divis DIV $4, $8, $9
 MCEND
 MCDEFN
-MU $8, $9
+mult MU $8, $9
 mult MUL $4, $8, $9
 MCEND
 ADD $1, $1, 5
@@ -12,7 +12,7 @@ CMP $3, $1, $2
 BN $3, multiplicacao
 BP $3, multiplicacao
 BNN $3, divisao
-divisao    DI $1, $2
+divisao DI $1, $2
 JMP fim
 multiplicacao MU $1, $2
 JMP fim
